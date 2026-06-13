@@ -1,0 +1,23 @@
+{
+  "name": "leader-cockpit-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --env-file=.env dev-server.ts",
+    "dev:static": "node dev-stub.cjs",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "@vercel/node": "^5.3.24",
+    "mysql2": "^3.15.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.0",
+    "dotenv": "^16.6.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

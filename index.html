@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leader Cockpit</title>
+    <link rel="icon" type="image/png" href="public/favicon.png" />
+    <link rel="apple-touch-icon" href="public/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="public/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section id="login-screen" class="panel">
+        <div class="brand-header">
+          <img class="logo" src="public/logoLeaderDourado.png" alt="Leader I.T" />
+          <p class="brand-subtitle">Cockpit Administrativo</p>
+        </div>
+
+        <div class="card">
+          <h1>Acesso ao Backoffice</h1>
+          <p class="muted">Entrar com credenciais de administracao (mock inicial).</p>
+          <form id="login-form">
+            <label for="username">Usuario</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="admin"
+              autocomplete="username"
+              required
+            />
+
+            <label for="password">Senha</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+
+            <button type="submit">Entrar</button>
+            <p id="login-message" class="message"></p>
+          </form>
+        </div>
+      </section>
+
+      <section id="dashboard-screen" class="panel hidden">
+        <div id="app-shell" class="app-shell">
+          <aside class="sidebar" aria-label="Navegação principal">
+            <div class="sidebar-brand">
+              <img class="sidebar-logo" src="public/logoLeaderDourado.png" alt="Leader I.T" />
+              <div class="sidebar-brand-text">
+                <span class="sidebar-brand-title">LEADER I.T.</span>
+                <span class="sidebar-brand-sub">AUTOMAÇÕES COM IA</span>
+              </div>
+            </div>
+            <nav class="sidebar-nav" role="navigation">
+              <button id="route-cockpit" type="button" class="nav-item" data-route="cockpit" title="Cockpit de Posts">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="7" height="9" rx="1" />
+                    <rect x="14" y="3" width="7" height="5" rx="1" />
+                    <rect x="14" y="12" width="7" height="9" rx="1" />
+                    <rect x="3" y="16" width="7" height="5" rx="1" />
+                  </svg>
+                </span>
+                <span class="nav-label">Cockpit de Posts</span>
+              </button>
+              <button id="route-posts" type="button" class="nav-item" data-route="posts" title="Posts">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                  </svg>
+                </span>
+                <span class="nav-label">Posts</span>
+              </button>
+              <button id="route-comments" type="button" class="nav-item" data-route="comments" title="Comentários">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </span>
+                <span class="nav-label">Comentários</span>
+              </button>
+              <button id="route-settings-nav" type="button" class="nav-item" data-route="settings" title="Configurações">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42 m12.72-12.72 1.42-1.42"
+                    />
+                  </svg>
+                </span>
+                <span class="nav-label">Configurações</span>
+              </button>
+              <p class="nav-section-label" role="presentation">GERAL</p>
+              <button id="route-users" type="button" class="nav-item" data-route="users" title="Usuários">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </span>
+                <span class="nav-label">Usuários</span>
+              </button>
+              <button id="route-reports" type="button" class="nav-item" data-route="reports" title="Relatórios">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 20V10M12 20V4M6 20v-6" />
+                  </svg>
+                </span>
+                <span class="nav-label">Relatórios</span>
+              </button>
+            </nav>
+            <div class="sidebar-footer">
+              <button id="logout" type="button" class="nav-item nav-item-logout">
+                <span class="nav-icon-svg" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                  </svg>
+                </span>
+                <span class="nav-label">Sair</span>
+              </button>
+            </div>
+          </aside>
+
+          <div class="sidebar-scrim" id="sidebar-scrim" hidden aria-hidden="true"></div>
+
+          <div class="main-wrap">
+            <header class="topbar">
+              <div class="topbar-lead">
+                <button id="menu-toggle" type="button" class="menu-toggle ghost" aria-label="Abrir menu">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M3 12h18M3 18h18" />
+                  </svg>
+                </button>
+                <h1 id="shell-page-title" class="topbar-title">Cockpit de Posts</h1>
+              </div>
+              <div class="topbar-tools">
+                <button id="comments-bell" type="button" class="ghost bell-btn" title="Comentários pendentes">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                  <span id="comments-bell-badge" class="bell-badge hidden">0</span>
+                </button>
+                <div class="topbar-user-block" id="topbar-user-block">
+                  <span class="user-avatar" id="user-avatar" aria-hidden="true">A</span>
+                  <div class="user-block-text">
+                    <span class="user-name" id="header-user-name">Admin</span>
+                    <span class="user-role" id="header-user-role">Administrador</span>
+                  </div>
+                  <svg class="user-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </div>
+              </div>
+            </header>
+
+            <div class="content-scroll">
+              <div class="content-inner">
+        <div id="section-dashboard">
+
+        <div class="card card-session">
+          <h2 class="card-title">Status da sessão</h2>
+          <div class="session-layout">
+            <div class="session-info">
+              <div class="session-line">
+                <span class="session-dot" aria-hidden="true"></span>
+                <span id="session-auth">Autenticado como: —</span>
+              </div>
+              <p id="session-posts-count" class="session-posts-count">0 posts carregados.</p>
+              <p id="dashboard-message" class="message dashboard-toast"></p>
+            </div>
+            <div class="session-actions">
+              <button id="new-post" type="button" class="ghost btn-session">Novo post</button>
+              <button id="refresh-posts" type="button" class="ghost btn-session">Atualizar posts</button>
+              <button id="import-posts" type="button" class="btn-gold btn-session">Importar do MySQL</button>
+              <button id="session-logout" type="button" class="btn-danger-outline btn-session">Sair</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="overview-section">
+          <h2 class="card-title">Visão geral</h2>
+          <div id="dashboard-kpis" class="kpi-grid"></div>
+          <div class="dashboard-columns">
+            <div class="dash-col">
+              <h3 class="column-heading">Top posts por visitas</h3>
+              <div id="dashboard-top-viewed" class="mini-list"></div>
+              <button type="button" class="see-all" data-scroll-target="posts-section">Ver todos →</button>
+            </div>
+            <div class="dash-col">
+              <h3 class="column-heading">Próximos agendados</h3>
+              <div id="dashboard-next-scheduled" class="mini-list"></div>
+              <button type="button" class="see-all" data-scroll-target="posts-section">Ver todos →</button>
+            </div>
+            <div class="dash-col">
+              <h3 class="column-heading">Últimos atualizados</h3>
+              <div id="dashboard-recent-updated" class="mini-list"></div>
+              <button type="button" class="see-all" data-scroll-target="posts-section">Ver todos →</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="editor-panel" class="card hidden">
+          <div class="editor-head">
+            <h2 id="editor-title">Editar post</h2>
+            <button id="close-editor" type="button" class="ghost">Fechar</button>
+          </div>
+          <form id="post-editor-form" class="editor-form">
+            <input type="hidden" id="post-id" name="id" value="" />
+
+            <label for="post-title">Titulo</label>
+            <input id="post-title" name="title" type="text" required />
+
+            <div class="field-inline">
+              <div class="grow">
+                <label for="post-slug">Slug</label>
+                <input id="post-slug" name="slug" type="text" required />
+              </div>
+              <button type="button" id="slug-from-title" class="ghost slug-btn">Gerar do titulo</button>
+            </div>
+
+            <label for="post-excerpt">Resumo (excerpt)</label>
+            <textarea id="post-excerpt" name="excerpt" rows="3"></textarea>
+
+            <label for="post-content-editor">Conteudo (HTML)</label>
+            <div class="editor-toolbar" id="post-content-toolbar">
+              <button type="button" class="ghost mini" data-cmd="bold"><strong>B</strong></button>
+              <button type="button" class="ghost mini" data-cmd="italic"><em>I</em></button>
+              <button type="button" class="ghost mini" data-cmd="underline"><u>U</u></button>
+              <button type="button" class="ghost mini" data-cmd="insertOrderedList">Num</button>
+              <button type="button" class="ghost mini" data-cmd="insertUnorderedList">Lista</button>
+              <button type="button" class="ghost mini" data-cmd="formatBlock" data-value="h2">H2</button>
+              <button type="button" class="ghost mini" data-cmd="formatBlock" data-value="h3">H3</button>
+              <button type="button" class="ghost mini" data-cmd="formatBlock" data-value="blockquote">Citação</button>
+              <button type="button" class="ghost mini" data-cmd="justifyLeft">Esq</button>
+              <button type="button" class="ghost mini" data-cmd="justifyCenter">Centro</button>
+              <button type="button" class="ghost mini" data-cmd="justifyRight">Dir</button>
+              <button type="button" class="ghost mini" data-action="toggle-html">&lt;&gt;</button>
+              <button type="button" class="ghost mini" data-action="insert-link">Link</button>
+              <button type="button" class="ghost mini" data-action="paste-plain">Colar limpo</button>
+              <button type="button" class="ghost mini" data-action="clear-format">Limpar</button>
+            </div>
+            <div id="post-content-editor" class="html-editor" contenteditable="true"></div>
+            <textarea id="post-content-raw" class="code hidden" rows="14"></textarea>
+            <input type="hidden" id="post-content" name="content" />
+            <label class="file-label">
+              Inserir imagem no conteúdo
+              <input id="post-content-image-file" type="file" accept="image/*" />
+            </label>
+
+            <label for="post-featured">Imagem destacada (URL)</label>
+            <input id="post-featured" name="featured_image" type="text" placeholder="https://..." />
+            <label class="file-label">
+              Ou enviar arquivo
+              <input id="post-featured-file" type="file" accept="image/*" />
+            </label>
+
+            <div class="two-col">
+              <div>
+                <label for="post-tags">Tags (virgula)</label>
+                <input id="post-tags" name="tags" type="text" placeholder="ia, automacao" />
+              </div>
+              <div>
+                <label for="post-categories">Categorias (virgula)</label>
+                <input id="post-categories" name="categories" type="text" placeholder="tecnologia" />
+              </div>
+            </div>
+
+            <div class="two-col">
+              <div>
+                <label for="post-author">Autor</label>
+                <input id="post-author" name="author_name" type="text" />
+              </div>
+              <div>
+                <label for="post-status">Status</label>
+                <select id="post-status" name="status">
+                  <option value="draft">Rascunho</option>
+                  <option value="published">Publicado</option>
+                  <option value="scheduled">Agendado</option>
+                </select>
+              </div>
+            </div>
+
+            <label for="post-published-at">Data / hora de publicacao (agendamento)</label>
+            <input id="post-published-at" name="published_at" type="datetime-local" />
+            <p class="hint">Use com status <strong>Agendado</strong> ou para definir <code>published_at</code>.</p>
+
+            <div class="two-col">
+              <div>
+                <label for="post-source">Fonte / etiqueta (opcional)</label>
+                <input id="post-source" name="source" type="text" />
+              </div>
+              <div>
+                <label for="post-source-url">URL da fonte</label>
+                <input id="post-source-url" name="source_url" type="text" />
+              </div>
+            </div>
+
+            <h3 class="section-title">SEO</h3>
+            <label for="post-meta-title">Meta titulo</label>
+            <input id="post-meta-title" name="meta_title" type="text" />
+
+            <label for="post-meta-desc">Meta descricao</label>
+            <textarea id="post-meta-desc" name="meta_description" rows="2"></textarea>
+
+            <label for="post-focus-kw">Palavra-chave foco</label>
+            <input id="post-focus-kw" name="focus_keyword" type="text" />
+
+            <div class="field-inline">
+              <button type="button" id="seo-suggest-btn" class="ghost">Sugerir SEO (IA)</button>
+              <span id="seo-suggest-hint" class="muted small"></span>
+            </div>
+
+            <label for="post-seo-report">Relatorio SEO (IA)</label>
+            <textarea id="post-seo-report" name="seo_ai_report" rows="6" class="code"></textarea>
+
+            <div class="form-actions">
+              <button type="submit" id="save-post">Salvar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card" id="posts-section">
+          <h2 class="card-title">Posts</h2>
+          <div id="posts-list" class="posts-list"></div>
+        </div>
+        </div>
+
+        <div id="section-comments" class="hidden">
+        <div class="card">
+          <h2 class="card-title">Comentários</h2>
+          <div class="field-inline">
+            <button id="comments-refresh" type="button" class="ghost">Atualizar</button>
+            <select id="comments-status-filter">
+              <option value="pending">Pendentes</option>
+              <option value="approved">Aprovados</option>
+              <option value="rejected">Rejeitados</option>
+            </select>
+          </div>
+          <div id="comments-list" class="mini-list"></div>
+        </div>
+        </div>
+
+        <div id="section-settings" class="hidden">
+        <div class="card" id="users-panel">
+          <h2 class="card-title">Usuários</h2>
+          <form id="user-form" class="editor-form">
+            <input type="hidden" id="user-id" />
+            <div class="two-col">
+              <div>
+                <label for="user-username">Username</label>
+                <input id="user-username" type="text" name="username" autocomplete="username" required />
+              </div>
+              <div>
+                <label for="user-email">Email</label>
+                <input id="user-email" type="email" required />
+              </div>
+            </div>
+            <div class="two-col">
+              <div>
+                <label for="user-role">Role</label>
+                <select id="user-role">
+                  <option value="admin">admin</option>
+                  <option value="editor">editor</option>
+                  <option value="author">author</option>
+                </select>
+              </div>
+              <div>
+                <label for="user-password">Senha (obrigatória só ao criar)</label>
+                <input id="user-password" type="password" name="new-password" autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="field-inline">
+              <button id="user-save" type="submit">Salvar usuário</button>
+              <button id="user-reset" type="button" class="ghost">Limpar</button>
+            </div>
+          </form>
+          <div id="users-list" class="mini-list"></div>
+        </div>
+        </div>
+
+        <footer class="app-footer">
+          <span>© 2026 Leader I.T. Automações com IA. Todos os direitos reservados.</span>
+          <span class="app-version">Versão 1.0.0</span>
+        </footer>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="public/app.js"></script>
+  </body>
+</html>
