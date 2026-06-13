@@ -1,6 +1,9 @@
-# Cockpit Backend (Posts)
+# Leader Gold Cockpit (backend)
 
-Estrutura inicial do backend em `admin/cockpit`, preparada para deploy na Vercel com Supabase.
+APIs e painel administrativo da Leader I.T — deploy na Vercel com Supabase.
+
+Repositório: **https://github.com/canalsp/leader-gold-cockpit**  
+Site (frontend): **https://github.com/canalsp/leader-gold**
 
 ## Objetivo inicial
 
@@ -41,12 +44,9 @@ Copie `.env.example` para `.env` e ajuste os valores.
 
 O comando `npm run dev` sobe **UI + rotas `/api`** na porta **3100** (`PORT` opcional).
 
-### 1. Criar o `.env` nesta pasta (`admin/cockpit`)
-
-O ficheiro tem de estar em **`admin/cockpit/.env`**, não só na raiz do site:
+### 1. Criar o `.env` nesta pasta (raiz do cockpit)
 
 ```powershell
-cd admin\cockpit
 copy .env.example .env
 ```
 
@@ -60,7 +60,6 @@ Edite `.env` e preencha pelo menos:
 ### 2. Subir o servidor
 
 ```powershell
-cd admin\cockpit
 npm install
 npm run dev
 ```
