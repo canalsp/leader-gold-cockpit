@@ -1,65 +1,48 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import healthHandler from "../handlers/health.js";
-import loginHandler from "../handlers/auth/login.js";
-import logoutHandler from "../handlers/auth/logout.js";
-import meHandler from "../handlers/auth/me.js";
-import bootstrapHandler from "../handlers/auth/bootstrap.js";
-import postsHandler from "../handlers/posts.js";
-import dashboardHandler from "../handlers/dashboard.js";
-import importPostsHandler from "../handlers/import-posts.js";
-import cmsPostHandler from "../handlers/cms-post.js";
-import uploadMediaHandler from "../handlers/upload-media.js";
-import commentsModerationHandler from "../handlers/comments/moderation.js";
-import settingsUsersHandler from "../handlers/settings/users.js";
-import captchaHandler from "../handlers/public/captcha.js";
-import publicCommentsHandler from "../handlers/public/comments.js";
-import postViewHandler from "../handlers/public/post-view.js";
-import seoSuggestHandler from "../handlers/seo-suggest.js";
-import chatHandler from "../handlers/public/chat.js";
-
 type Handler = (req: VercelRequest, res: VercelResponse) => void | Promise<void>;
+type HandlerModule = { default: Handler };
 
-const handlers: Record<string, Record<string, Handler>> = {
+const handlerLoaders: Record<string, Record<string, () => Promise<HandlerModule>>> = {
   GET: {
-    "/api/health": healthHandler as Handler,
-    "/api/auth/me": meHandler as unknown as Handler,
-    "/api/posts": postsHandler as Handler,
-    "/api/dashboard": dashboardHandler as Handler,
-    "/api/cms-post": cmsPostHandler as Handler,
-    "/api/comments/moderation": commentsModerationHandler as Handler,
-    "/api/settings/users": settingsUsersHandler as Handler,
-    "/api/public/captcha": captchaHandler as Handler,
-    "/api/public/comments": publicCommentsHandler as Handler,
+    "/api/health": () => import("../handlers/health.js"),
+    "/api/auth/me": () => import("../handlers/auth/me.js"),
+    "/api/posts": () => import("../handlers/posts.js"),
+    "/api/dashboard": () => import("../handlers/dashboard.js"),
+    "/api/cms-post": () => import("../handlers/cms-post.js"),
+    "/api/comments/moderation": () => import("../handlers/comments/moderation.js"),
+    "/api/settings/users": () => import("../handlers/settings/users.js"),
+    "/api/public/captcha": () => import("../handlers/public/captcha.js"),
+    "/api/public/comments": () => import("../handlers/public/comments.js"),
   },
   POST: {
-    "/api/auth/login": loginHandler as unknown as Handler,
-    "/api/auth/logout": logoutHandler as unknown as Handler,
-    "/api/auth/bootstrap": bootstrapHandler as unknown as Handler,
-    "/api/import-posts": importPostsHandler as Handler,
-    "/api/cms-post": cmsPostHandler as Handler,
-    "/api/upload-media": uploadMediaHandler as Handler,
-    "/api/seo-suggest": seoSuggestHandler as Handler,
-    "/api/public/comments": publicCommentsHandler as Handler,
-    "/api/public/post-view": postViewHandler as Handler,
-    "/api/public/chat": chatHandler as Handler,
+    "/api/auth/login": () => import("../handlers/auth/login.js"),
+    "/api/auth/logout": () => import("../handlers/auth/logout.js"),
+    "/api/auth/bootstrap": () => import("../handlers/auth/bootstrap.js"),
+    "/api/import-posts": () => import("../handlers/import-posts.js"),
+    "/api/cms-post": () => import("../handlers/cms-post.js"),
+    "/api/upload-media": () => import("../handlers/upload-media.js"),
+    "/api/seo-suggest": () => import("../handlers/seo-suggest.js"),
+    "/api/public/comments": () => import("../handlers/public/comments.js"),
+    "/api/public/post-view": () => import("../handlers/public/post-view.js"),
+    "/api/public/chat": () => import("../handlers/public/chat.js"),
   },
   PATCH: {
-    "/api/cms-post": cmsPostHandler as Handler,
-    "/api/comments/moderation": commentsModerationHandler as Handler,
-    "/api/settings/users": settingsUsersHandler as Handler,
+    "/api/cms-post": () => import("../handlers/cms-post.js"),
+    "/api/comments/moderation": () => import("../handlers/comments/moderation.js"),
+    "/api/settings/users": () => import("../handlers/settings/users.js"),
   },
   DELETE: {
-    "/api/comments/moderation": commentsModerationHandler as Handler,
-    "/api/settings/users": settingsUsersHandler as Handler,
+    "/api/comments/moderation": () => import("../handlers/comments/moderation.js"),
+    "/api/settings/users": () => import("../handlers/settings/users.js"),
   },
 };
 
-const optionHandlers: Record<string, Handler> = {
-  "/api/public/captcha": captchaHandler as Handler,
-  "/api/public/comments": publicCommentsHandler as Handler,
-  "/api/public/post-view": postViewHandler as Handler,
-  "/api/public/chat": chatHandler as Handler,
+const optionLoaders: Record<string, () => Promise<HandlerModule>> = {
+  "/api/public/captcha": () => import("../handlers/public/captcha.js"),
+  "/api/public/comments": () => import("../handlers/public/comments.js"),
+  "/api/public/post-view": () => import("../handlers/public/post-view.js"),
+  "/api/public/chat": () => import("../handlers/public/chat.js"),
 };
 
 function apiPath(req: VercelRequest): string {
@@ -85,15 +68,17 @@ export async function dispatchApi(req: VercelRequest, res: VercelResponse): Prom
   const keyPath = apiPath(req);
 
   if (method === "OPTIONS") {
-    const oh = optionHandlers[keyPath];
-    if (!oh) return false;
-    await Promise.resolve(oh(req, res));
+    const load = optionLoaders[keyPath];
+    if (!load) return false;
+    const mod = await load();
+    await Promise.resolve(mod.default(req, res));
     return true;
   }
 
-  const handlerFn = handlers[method]?.[keyPath];
-  if (!handlerFn) return false;
+  const load = handlerLoaders[method]?.[keyPath];
+  if (!load) return false;
 
-  await Promise.resolve(handlerFn(req, res));
+  const mod = await load();
+  await Promise.resolve(mod.default(req, res));
   return true;
 }
