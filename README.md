@@ -80,6 +80,12 @@ Rode no Supabase SQL Editor: `sql/posts-instagram.sql` (colunas `instagram_prepa
 
 Defina `PUBLIC_SITE_ORIGIN=https://www.leaderti.com.br` para o link do artigo na legenda.
 
+### Estatísticas de compartilhamento
+
+Cliques nos ícones de compartilhar do site são contados via `/api/public/share-event`.
+
+Rode `sql/share-stats.sql` no Supabase (`share_count`, `share_counts_by_channel` nos posts + tabela `page_share_stats`).
+
 ### 3. Testar APIs (PowerShell)
 
 ```powershell

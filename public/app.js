@@ -23,8 +23,9 @@ const commentsBellBtn = document.getElementById("comments-bell");
 const commentsBellBadge = document.getElementById("comments-bell-badge");
 const dashboardKpis = document.getElementById("dashboard-kpis");
 const dashboardTopViewed = document.getElementById("dashboard-top-viewed");
+const dashboardTopSharedPosts = document.getElementById("dashboard-top-shared-posts");
+const dashboardTopSharedPages = document.getElementById("dashboard-top-shared-pages");
 const dashboardNextScheduled = document.getElementById("dashboard-next-scheduled");
-const dashboardRecentUpdated = document.getElementById("dashboard-recent-updated");
 const commentsRefreshBtn = document.getElementById("comments-refresh");
 const commentsStatusFilter = document.getElementById("comments-status-filter");
 const commentsList = document.getElementById("comments-list");
@@ -78,6 +79,7 @@ const KPI_ICONS = [
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>`,
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>`,
 ];
 
 const EMPTY_CALENDAR_SVG = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
@@ -481,12 +483,13 @@ function renderPosts(items) {
       const status = post.status || "sem-status";
       const date = post.published_at || post.created_at || "-";
       const views = post.view_count != null ? ` | views: ${post.view_count}` : "";
+      const shares = post.share_count != null ? ` | shares: ${post.share_count}` : "";
       return `
         <article class="post-item" data-id="${post.id}">
           <div class="post-meta">
             <strong>${escapeHtml(post.title || "(sem titulo)")}</strong>
             <span class="muted">slug: ${escapeHtml(post.slug || "-")}</span><br />
-            <span class="muted">status: ${escapeHtml(status)} | data: ${escapeHtml(String(date))}${escapeHtml(views)}</span>
+            <span class="muted">status: ${escapeHtml(status)} | data: ${escapeHtml(String(date))}${escapeHtml(views)}${escapeHtml(shares)}</span>
           </div>
           <div class="post-actions">
             <button type="button" class="ghost edit-post" data-id="${post.id}">Editar</button>
@@ -539,6 +542,16 @@ function renderScheduledColumn(target, items) {
     .join("");
 }
 
+function formatShareChannels(byChannel) {
+  if (!byChannel || typeof byChannel !== "object") return "";
+  const parts = Object.entries(byChannel)
+    .filter(([, n]) => Number(n) > 0)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, 3)
+    .map(([k, n]) => `${k}: ${n}`);
+  return parts.length ? parts.join(" · ") : "";
+}
+
 function renderDashboard(data) {
   const t = data?.totals ?? {};
   const kpis = [
@@ -548,6 +561,7 @@ function renderDashboard(data) {
     ["Agendados", t.scheduled ?? 0],
     ["Pendentes SEO", t.seoPending ?? 0],
     ["Visitas totais", t.totalViews ?? 0],
+    ["Cliques em compartilhar", t.totalShares ?? 0],
   ];
   dashboardKpis.innerHTML = kpis
     .map(
@@ -573,7 +587,7 @@ function renderDashboard(data) {
         const thumb = miniThumbHtml(p.featured_image);
         const body = `<div class="mini-item-body"><strong>${escapeHtml(p.title || "(sem título)")}</strong><span class="mini-slug">/${escapeHtml(
           p.slug || "-",
-        )}</span><span class="mini-views">${Number(p.view_count ?? 0)} views</span></div>`;
+        )}</span><span class="mini-views">${Number(p.view_count ?? 0)} views · ${Number(p.share_count ?? 0)} shares</span></div>`;
         return `<div class="mini-item mini-item-media">${thumb}${body}</div>`;
       })
       .join("");
@@ -581,21 +595,35 @@ function renderDashboard(data) {
     renderMiniList(dashboardTopViewed, [], () => "");
   }
 
-  renderScheduledColumn(dashboardNextScheduled, data.nextScheduled);
-
-  if (Array.isArray(data.recentUpdated) && data.recentUpdated.length) {
-    dashboardRecentUpdated.innerHTML = data.recentUpdated
+  if (Array.isArray(data.topSharedPosts) && data.topSharedPosts.length) {
+    dashboardTopSharedPosts.innerHTML = data.topSharedPosts
       .map((p) => {
         const thumb = miniThumbHtml(p.featured_image);
-        const body = `<div class="mini-item-body"><strong>${escapeHtml(p.title || "(sem título)")}</strong><span class="mini-slug">${formatDate(
-          p.updated_at,
-        )}</span></div>`;
+        const channels = formatShareChannels(p.share_counts_by_channel);
+        const body = `<div class="mini-item-body"><strong>${escapeHtml(p.title || "(sem título)")}</strong><span class="mini-slug">/${escapeHtml(
+          p.slug || "-",
+        )}</span><span class="mini-shares">${Number(p.share_count ?? 0)} cliques${channels ? ` · ${escapeHtml(channels)}` : ""}</span></div>`;
         return `<div class="mini-item mini-item-media">${thumb}${body}</div>`;
       })
       .join("");
   } else {
-    renderMiniList(dashboardRecentUpdated, [], () => "");
+    dashboardTopSharedPosts.innerHTML = "<p class='muted'>Nenhum compartilhamento registrado ainda.</p>";
   }
+
+  if (Array.isArray(data.topSharedPages) && data.topSharedPages.length) {
+    dashboardTopSharedPages.innerHTML = data.topSharedPages
+      .map((p) => {
+        const channels = formatShareChannels(p.share_counts_by_channel);
+        return `<div class="mini-item"><strong>${escapeHtml(p.path || "/")}</strong><span class="mini-shares">${Number(
+          p.share_count ?? 0,
+        )} cliques${channels ? ` · ${escapeHtml(channels)}` : ""}</span></div>`;
+      })
+      .join("");
+  } else {
+    dashboardTopSharedPages.innerHTML = "<p class='muted'>Nenhuma página compartilhada ainda.</p>";
+  }
+
+  renderScheduledColumn(dashboardNextScheduled, data.nextScheduled);
 }
 
 async function loadDashboard() {

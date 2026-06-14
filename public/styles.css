@@ -960,6 +960,17 @@ select:focus {
   margin-top: 12px;
 }
 
+.dashboard-columns-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mini-shares {
+  display: block;
+  font-size: 11px;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
 .mini-list {
   display: grid;
   gap: 8px;
@@ -984,8 +995,15 @@ select:focus {
   flex-wrap: wrap;
 }
 
+@media (max-width: 1100px) {
+  .dashboard-columns-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 900px) {
-  .dashboard-columns {
+  .dashboard-columns,
+  .dashboard-columns-4 {
     grid-template-columns: 1fr;
   }
 }

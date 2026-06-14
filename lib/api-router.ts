@@ -26,6 +26,7 @@ const handlerLoaders: Record<string, Record<string, () => Promise<HandlerModule>
     "/api/instagram-prepare": () => import("../handlers/instagram-prepare.js"),
     "/api/public/comments": () => import("../handlers/public/comments.js"),
     "/api/public/post-view": () => import("../handlers/public/post-view.js"),
+    "/api/public/share-event": () => import("../handlers/public/share-event.js"),
     "/api/public/chat": () => import("../handlers/public/chat.js"),
   },
   PATCH: {
@@ -43,6 +44,7 @@ const optionLoaders: Record<string, () => Promise<HandlerModule>> = {
   "/api/public/captcha": () => import("../handlers/public/captcha.js"),
   "/api/public/comments": () => import("../handlers/public/comments.js"),
   "/api/public/post-view": () => import("../handlers/public/post-view.js"),
+  "/api/public/share-event": () => import("../handlers/public/share-event.js"),
   "/api/public/chat": () => import("../handlers/public/chat.js"),
 };
 

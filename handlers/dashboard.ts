@@ -1,7 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { requireAuth } from "../lib/require-auth.js";
 import { postsTable, supabase } from "../lib/supabase.js";
+
 const commentsTable = process.env.SUPABASE_COMMENTS_TABLE ?? "post_comments";
+const PAGE_STATS_TABLE = "page_share_stats";
 
 type PostLite = {
   id: number;
@@ -11,9 +13,18 @@ type PostLite = {
   published_at: string | null;
   updated_at: string | null;
   view_count: number | null;
+  share_count: number | null;
+  share_counts_by_channel: Record<string, number> | null;
   meta_description: string | null;
   focus_keyword: string | null;
   featured_image: string | null;
+};
+
+type PageShareLite = {
+  path: string;
+  share_count: number | null;
+  share_counts_by_channel: Record<string, number> | null;
+  updated_at: string | null;
 };
 
 function safeDate(value: string | null): number {
@@ -33,13 +44,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { data, error } = await supabase
     .from(postsTable)
     .select(
-      "id,title,slug,status,published_at,updated_at,view_count,meta_description,focus_keyword,featured_image",
+      "id,title,slug,status,published_at,updated_at,view_count,share_count,share_counts_by_channel,meta_description,focus_keyword,featured_image",
     )
     .limit(5000);
 
   if (error) {
     return res.status(500).json({ error: "Failed to load dashboard", detail: error.message });
   }
+
+  const { data: pageRows, error: pageErr } = await supabase
+    .from(PAGE_STATS_TABLE)
+    .select("path,share_count,share_counts_by_channel,updated_at")
+    .order("share_count", { ascending: false })
+    .limit(20);
+
+  if (pageErr) {
+    return res.status(500).json({ error: "Failed to load page share stats", detail: pageErr.message });
+  }
+
   const { count: pendingComments, error: commentsErr } = await supabase
     .from(commentsTable)
     .select("id", { count: "exact", head: true })
@@ -49,6 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const items = (data ?? []) as PostLite[];
+  const pages = (pageRows ?? []) as PageShareLite[];
   const now = Date.now();
 
   let published = 0;
@@ -56,6 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let scheduled = 0;
   let seoPending = 0;
   let totalViews = 0;
+  let totalShares = 0;
 
   for (const post of items) {
     const status = post.status ?? "draft";
@@ -71,11 +95,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (missingMeta || missingKeyword) seoPending += 1;
 
     totalViews += Number(post.view_count ?? 0);
+    totalShares += Number(post.share_count ?? 0);
+  }
+
+  for (const page of pages) {
+    totalShares += Number(page.share_count ?? 0);
   }
 
   const topViewed = [...items]
     .sort((a, b) => Number(b.view_count ?? 0) - Number(a.view_count ?? 0))
     .slice(0, 5);
+
+  const topSharedPosts = [...items]
+    .filter((p) => Number(p.share_count ?? 0) > 0)
+    .sort((a, b) => Number(b.share_count ?? 0) - Number(a.share_count ?? 0))
+    .slice(0, 5);
+
+  const topSharedPages = pages.slice(0, 5);
 
   const nextScheduled = items
     .filter((p) => (p.status ?? "draft") === "scheduled" && safeDate(p.published_at) > now)
@@ -95,11 +131,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       scheduled,
       seoPending,
       totalViews,
-      pendingComments: pendingComments ?? 0
+      totalShares,
+      pendingComments: pendingComments ?? 0,
     },
     topViewed,
+    topSharedPosts,
+    topSharedPages,
     nextScheduled,
-    recentUpdated
+    recentUpdated,
   });
 }
-
