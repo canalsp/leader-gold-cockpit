@@ -68,6 +68,18 @@ Deve aparecer: `[cockpit] UI + APIs em http://127.0.0.1:3100`
 
 Se der `Missing environment variable: SUPABASE_URL`, falta variável no `.env` desta pasta ou o ficheiro não existe.
 
+### Pacote Instagram (blog)
+
+No editor de posts, marque **Preparar pacote Instagram** para gerar ao salvar:
+
+- imagem recortada para **feed (4:5)** ou **story (9:16)** a partir da imagem destacada;
+- legenda curta e hashtags (OpenAI, se `OPENAI_API_KEY` estiver definida);
+- download da imagem e copiar legenda para publicação manual.
+
+Rode no Supabase SQL Editor: `sql/posts-instagram.sql` (colunas `instagram_prepare`, `instagram_draft`).
+
+Defina `PUBLIC_SITE_ORIGIN=https://www.leaderti.com.br` para o link do artigo na legenda.
+
 ### 3. Testar APIs (PowerShell)
 
 ```powershell

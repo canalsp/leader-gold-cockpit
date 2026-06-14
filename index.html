@@ -329,6 +329,41 @@
             <label for="post-seo-report">Relatorio SEO (IA)</label>
             <textarea id="post-seo-report" name="seo_ai_report" rows="6" class="code"></textarea>
 
+            <h3 class="section-title">Instagram</h3>
+            <p class="hint">Gera legenda, hashtags e imagem no formato feed (4:5) ou story (9:16). Publicacao manual no Instagram.</p>
+            <label class="check-row">
+              <input id="post-instagram-prepare" type="checkbox" />
+              Preparar pacote Instagram ao salvar (se houver imagem destacada)
+            </label>
+            <div class="two-col">
+              <div>
+                <label for="post-instagram-format">Formato da imagem</label>
+                <select id="post-instagram-format">
+                  <option value="feed">Feed (4:5 — 1080×1350)</option>
+                  <option value="story">Story (9:16 — 1080×1920)</option>
+                </select>
+              </div>
+              <div class="field-inline align-end">
+                <button type="button" id="instagram-prepare-btn" class="ghost">Gerar pacote Instagram</button>
+              </div>
+            </div>
+            <span id="instagram-prepare-hint" class="muted small"></span>
+            <div id="instagram-pack-panel" class="instagram-pack hidden">
+              <div class="instagram-pack-preview-wrap">
+                <img id="instagram-pack-preview" alt="Preview Instagram" class="instagram-pack-preview" />
+              </div>
+              <label for="instagram-pack-caption">Legenda</label>
+              <textarea id="instagram-pack-caption" rows="6"></textarea>
+              <label for="instagram-pack-hashtags">Hashtags</label>
+              <textarea id="instagram-pack-hashtags" rows="2"></textarea>
+              <p class="hint" id="instagram-pack-blog-url"></p>
+              <div class="field-inline">
+                <button type="button" id="instagram-copy-full" class="ghost">Copiar legenda completa</button>
+                <button type="button" id="instagram-copy-hashtags" class="ghost">Copiar hashtags</button>
+                <a id="instagram-download-image" class="ghost link-btn" href="#" download="instagram-leader.jpg">Baixar imagem</a>
+              </div>
+            </div>
+
             <div class="form-actions">
               <button type="submit" id="save-post">Salvar</button>
             </div>

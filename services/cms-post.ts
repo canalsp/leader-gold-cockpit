@@ -19,6 +19,8 @@ export type CmsPostPayload = {
   meta_description?: string | null;
   focus_keyword?: string | null;
   seo_ai_report?: string | null;
+  instagram_prepare?: boolean;
+  instagram_draft?: Record<string, unknown> | null;
 };
 
 const ALLOWED_STATUS: PostStatus[] = ["draft", "published", "scheduled"];
@@ -73,7 +75,12 @@ export function parseCmsPayload(body: unknown): CmsPostPayload {
     meta_title: b.meta_title != null ? String(b.meta_title).trim() || null : null,
     meta_description: b.meta_description != null ? String(b.meta_description).trim() || null : null,
     focus_keyword: b.focus_keyword != null ? String(b.focus_keyword).trim() || null : null,
-    seo_ai_report: b.seo_ai_report != null ? String(b.seo_ai_report) : null
+    seo_ai_report: b.seo_ai_report != null ? String(b.seo_ai_report) : null,
+    instagram_prepare: Boolean(b.instagram_prepare),
+    instagram_draft:
+      b.instagram_draft != null && typeof b.instagram_draft === "object" && !Array.isArray(b.instagram_draft)
+        ? (b.instagram_draft as Record<string, unknown>)
+        : null,
   };
 }
 
@@ -98,6 +105,8 @@ export function rowForInsert(payload: CmsPostPayload): Record<string, unknown> {
     meta_description: payload.meta_description,
     focus_keyword: payload.focus_keyword,
     seo_ai_report: payload.seo_ai_report,
+    instagram_prepare: payload.instagram_prepare ?? false,
+    instagram_draft: payload.instagram_draft ?? null,
     view_count: 0,
     created_at: now,
     updated_at: now
@@ -123,6 +132,8 @@ export function rowForUpdate(payload: CmsPostPayload): Record<string, unknown> {
     meta_description: payload.meta_description,
     focus_keyword: payload.focus_keyword,
     seo_ai_report: payload.seo_ai_report,
+    instagram_prepare: payload.instagram_prepare ?? false,
+    instagram_draft: payload.instagram_draft ?? null,
     updated_at: now
   };
 }

@@ -23,6 +23,7 @@ const handlerLoaders: Record<string, Record<string, () => Promise<HandlerModule>
     "/api/cms-post": () => import("../handlers/cms-post.js"),
     "/api/upload-media": () => import("../handlers/upload-media.js"),
     "/api/seo-suggest": () => import("../handlers/seo-suggest.js"),
+    "/api/instagram-prepare": () => import("../handlers/instagram-prepare.js"),
     "/api/public/comments": () => import("../handlers/public/comments.js"),
     "/api/public/post-view": () => import("../handlers/public/post-view.js"),
     "/api/public/chat": () => import("../handlers/public/chat.js"),

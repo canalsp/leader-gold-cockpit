@@ -56,8 +56,19 @@ const contentRaw = document.getElementById("post-content-raw");
 const contentToolbar = document.getElementById("post-content-toolbar");
 const seoSuggestBtn = document.getElementById("seo-suggest-btn");
 const seoSuggestHint = document.getElementById("seo-suggest-hint");
+const instagramPrepareBtn = document.getElementById("instagram-prepare-btn");
+const instagramPrepareHint = document.getElementById("instagram-prepare-hint");
+const instagramPackPanel = document.getElementById("instagram-pack-panel");
+const instagramPackPreview = document.getElementById("instagram-pack-preview");
+const instagramPackCaption = document.getElementById("instagram-pack-caption");
+const instagramPackHashtags = document.getElementById("instagram-pack-hashtags");
+const instagramPackBlogUrl = document.getElementById("instagram-pack-blog-url");
+const instagramCopyFullBtn = document.getElementById("instagram-copy-full");
+const instagramCopyHashtagsBtn = document.getElementById("instagram-copy-hashtags");
+const instagramDownloadImage = document.getElementById("instagram-download-image");
 let rawMode = false;
 let currentUser = null;
+let instagramDraft = null;
 let postsLoadedCount = 0;
 
 const KPI_ICONS = [
@@ -321,8 +332,95 @@ function resetEditor() {
   postEditorForm.reset();
   document.getElementById("post-id").value = "";
   seoSuggestHint.textContent = "";
+  instagramPrepareHint.textContent = "";
+  instagramDraft = null;
+  hideInstagramPack();
   setEditorHtml("");
   setRawMode(false);
+}
+
+function hideInstagramPack() {
+  instagramPackPanel.classList.add("hidden");
+  instagramPackPreview.removeAttribute("src");
+  instagramPackCaption.value = "";
+  instagramPackHashtags.value = "";
+  instagramPackBlogUrl.textContent = "";
+  instagramDownloadImage.removeAttribute("href");
+}
+
+function applyInstagramDraftToUI(draft, imageBase64, imageMime) {
+  if (!draft) {
+    hideInstagramPack();
+    return;
+  }
+  instagramDraft = draft;
+  instagramPackCaption.value = draft.caption || "";
+  instagramPackHashtags.value = draft.hashtags || "";
+  instagramPackBlogUrl.textContent = draft.blog_url
+    ? `Artigo: ${draft.blog_url} (use link na bio ou adesivo no story)`
+    : "";
+  if (imageBase64) {
+    const mime = imageMime || "image/jpeg";
+    const dataUrl = `data:${mime};base64,${imageBase64}`;
+    instagramPackPreview.src = dataUrl;
+    instagramDownloadImage.href = dataUrl;
+    const slug = document.getElementById("post-slug").value.trim() || "post";
+    instagramDownloadImage.download = `instagram-${slug}.jpg`;
+  }
+  instagramPackPanel.classList.remove("hidden");
+}
+
+async function generateInstagramPack({ silent = false } = {}) {
+  instagramPrepareHint.textContent = "";
+  const title = document.getElementById("post-title").value.trim();
+  const featured = document.getElementById("post-featured").value.trim();
+  if (!title) {
+    instagramPrepareHint.textContent = "Preencha o titulo.";
+    return false;
+  }
+  if (!featured) {
+    instagramPrepareHint.textContent = "Envie a imagem destacada antes.";
+    return false;
+  }
+  if (!silent) {
+    setMessage(dashboardMessage, "Gerando pacote Instagram...");
+  }
+  try {
+    const res = await request("api/instagram-prepare", {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        slug: document.getElementById("post-slug").value.trim(),
+        excerpt: document.getElementById("post-excerpt").value,
+        content: contentInput.value,
+        featured_image: featured,
+        format: document.getElementById("post-instagram-format").value,
+        tags: document
+          .getElementById("post-tags")
+          .value.split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+        categories: document
+          .getElementById("post-categories")
+          .value.split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      }),
+    });
+    applyInstagramDraftToUI(res.draft, res.image_base64, res.image_mime);
+    if (!silent) {
+      setMessage(dashboardMessage, res.hint || "Pacote Instagram gerado.");
+    }
+    instagramPrepareHint.textContent = "Revise antes de publicar no Instagram.";
+    return true;
+  } catch (e) {
+    const msg = e.message || "Erro ao gerar pacote Instagram";
+    if (!silent) {
+      setMessage(dashboardMessage, msg, true);
+    }
+    instagramPrepareHint.textContent = msg;
+    return false;
+  }
 }
 
 function openNewPost() {
@@ -355,6 +453,15 @@ async function openEditPost(id) {
     document.getElementById("post-meta-desc").value = p.meta_description ?? "";
     document.getElementById("post-focus-kw").value = p.focus_keyword ?? "";
     document.getElementById("post-seo-report").value = p.seo_ai_report ?? "";
+    document.getElementById("post-instagram-prepare").checked = Boolean(p.instagram_prepare);
+    const draft = p.instagram_draft && typeof p.instagram_draft === "object" ? p.instagram_draft : null;
+    if (draft?.format) {
+      document.getElementById("post-instagram-format").value = draft.format === "story" ? "story" : "feed";
+    }
+    applyInstagramDraftToUI(draft, null, null);
+    if (draft) {
+      instagramPackPanel.classList.remove("hidden");
+    }
     setMessage(dashboardMessage, "");
     showEditor(true);
     window.scrollTo({ top: editorPanel.offsetTop - 20, behavior: "smooth" });
@@ -707,6 +814,8 @@ function collectPayload() {
     meta_description: document.getElementById("post-meta-desc").value.trim() || null,
     focus_keyword: document.getElementById("post-focus-kw").value.trim() || null,
     seo_ai_report: document.getElementById("post-seo-report").value.trim() || null,
+    instagram_prepare: document.getElementById("post-instagram-prepare").checked,
+    instagram_draft: instagramDraft,
   };
 
   if (idRaw) {
@@ -984,6 +1093,41 @@ seoSuggestBtn.addEventListener("click", async () => {
   }
 });
 
+instagramPrepareBtn.addEventListener("click", () => {
+  void generateInstagramPack();
+});
+
+instagramCopyFullBtn.addEventListener("click", async () => {
+  const caption = instagramPackCaption.value.trim();
+  const hashtags = instagramPackHashtags.value.trim();
+  const blog = instagramDraft?.blog_url ? `\n\n🔗 ${instagramDraft.blog_url}` : "";
+  const full = [caption, hashtags].filter(Boolean).join("\n\n") + blog;
+  try {
+    await navigator.clipboard.writeText(full.trim());
+    instagramPrepareHint.textContent = "Legenda completa copiada.";
+  } catch {
+    window.prompt("Copie a legenda:", full.trim());
+  }
+});
+
+instagramCopyHashtagsBtn.addEventListener("click", async () => {
+  const hashtags = instagramPackHashtags.value.trim();
+  if (!hashtags) return;
+  try {
+    await navigator.clipboard.writeText(hashtags);
+    instagramPrepareHint.textContent = "Hashtags copiadas.";
+  } catch {
+    window.prompt("Copie as hashtags:", hashtags);
+  }
+});
+
+instagramPackCaption.addEventListener("input", () => {
+  if (instagramDraft) instagramDraft.caption = instagramPackCaption.value;
+});
+instagramPackHashtags.addEventListener("input", () => {
+  if (instagramDraft) instagramDraft.hashtags = instagramPackHashtags.value;
+});
+
 postEditorForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   syncEditorToInput();
@@ -991,12 +1135,38 @@ postEditorForm.addEventListener("submit", async (event) => {
   const isUpdate = Boolean(payload.id);
   setMessage(dashboardMessage, "Salvando...");
   try {
+    let savedRes;
     if (isUpdate) {
-      await request("api/cms-post", { method: "PATCH", body: JSON.stringify(payload) });
+      savedRes = await request("api/cms-post", { method: "PATCH", body: JSON.stringify(payload) });
     } else {
-      await request("api/cms-post", { method: "POST", body: JSON.stringify(payload) });
+      savedRes = await request("api/cms-post", { method: "POST", body: JSON.stringify(payload) });
+      if (savedRes.post?.id) {
+        document.getElementById("post-id").value = String(savedRes.post.id);
+      }
     }
-    setMessage(dashboardMessage, "Salvo com sucesso.");
+
+    const shouldPrepare =
+      document.getElementById("post-instagram-prepare").checked &&
+      document.getElementById("post-featured").value.trim();
+    if (shouldPrepare) {
+      const ok = await generateInstagramPack({ silent: true });
+      if (ok) {
+        const refreshPayload = collectPayload();
+        if (refreshPayload.id) {
+          await request("api/cms-post", {
+            method: "PATCH",
+            body: JSON.stringify(refreshPayload),
+          });
+        }
+        setMessage(dashboardMessage, "Salvo. Pacote Instagram gerado — revise no editor.");
+        await loadDashboard();
+        await loadPosts();
+        return;
+      }
+      setMessage(dashboardMessage, "Salvo, mas falhou gerar Instagram. Use o botao Gerar pacote.", true);
+    } else {
+      setMessage(dashboardMessage, "Salvo com sucesso.");
+    }
     showEditor(false);
     await loadDashboard();
     await loadPosts();
