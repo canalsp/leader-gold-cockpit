@@ -63,15 +63,18 @@ const optionHandlers: Record<string, Handler> = {
 };
 
 function apiPath(req: VercelRequest): string {
+  const qp = req.query?.path;
+  if (typeof qp === "string" && qp.trim()) {
+    return `/api/${qp.replace(/^\/+|\/+$/g, "")}`;
+  }
+  if (Array.isArray(qp) && qp.length > 0) {
+    return `/api/${qp.join("/")}`.replace(/\/$/, "") || "/api";
+  }
+
   const raw = String(req.url || "/").split("?")[0];
   const normalized = raw.replace(/\/$/, "") || "/";
-  if (normalized.startsWith("/api")) return normalized;
-  const segments = req.query?.path;
-  if (Array.isArray(segments) && segments.length > 0) {
-    return `/api/${segments.join("/")}`.replace(/\/$/, "") || "/api";
-  }
-  if (typeof segments === "string" && segments) {
-    return `/api/${segments}`.replace(/\/$/, "") || "/api";
+  if (normalized.startsWith("/api") && normalized !== "/api/index") {
+    return normalized;
   }
   return normalized;
 }
