@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-type Handler = (req: VercelRequest, res: VercelResponse) => void | Promise<void>;
+type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 type HandlerModule = { default: Handler };
 
 const handlerLoaders: Record<string, Record<string, () => Promise<HandlerModule>>> = {
