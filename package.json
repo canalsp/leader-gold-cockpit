@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx --env-file=.env dev-server.ts",
     "dev:static": "node dev-stub.cjs",
-    "build": "tsc --noEmit",
+    "build": "tsc --noEmit && node scripts/vercel-static.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
