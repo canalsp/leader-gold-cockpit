@@ -14,23 +14,7 @@ import { fileURLToPath } from "node:url";
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import healthHandler from "./api/health.js";
-import loginHandler from "./api/auth/login.js";
-import logoutHandler from "./api/auth/logout.js";
-import meHandler from "./api/auth/me.js";
-import bootstrapHandler from "./api/auth/bootstrap.js";
-import postsHandler from "./api/posts.js";
-import dashboardHandler from "./api/dashboard.js";
-import importPostsHandler from "./api/import-posts.js";
-import cmsPostHandler from "./api/cms-post.js";
-import uploadMediaHandler from "./api/upload-media.js";
-import commentsModerationHandler from "./api/comments/moderation.js";
-import settingsUsersHandler from "./api/settings/users.js";
-import captchaHandler from "./api/public/captcha.js";
-import publicCommentsHandler from "./api/public/comments.js";
-import postViewHandler from "./api/public/post-view.js";
-import seoSuggestHandler from "./api/seo-suggest.js";
-import chatHandler from "./api/public/chat.js";
+import { dispatchApi } from "./lib/api-router.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -182,72 +166,13 @@ async function readBody(req: http.IncomingMessage): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-type Handler = (req: VercelRequest, res: VercelResponse) => void | Promise<void>;
-
-const handlers: Record<string, Record<string, Handler>> = {
-  GET: {
-    "/api/health": healthHandler as Handler,
-    "/api/auth/me": meHandler as unknown as Handler,
-    "/api/posts": postsHandler as Handler,
-    "/api/dashboard": dashboardHandler as Handler,
-    "/api/cms-post": cmsPostHandler as Handler,
-    "/api/comments/moderation": commentsModerationHandler as Handler,
-    "/api/settings/users": settingsUsersHandler as Handler,
-    "/api/public/captcha": captchaHandler as Handler,
-    "/api/public/comments": publicCommentsHandler as Handler,
-  },
-  POST: {
-    "/api/auth/login": loginHandler as unknown as Handler,
-    "/api/auth/logout": logoutHandler as unknown as Handler,
-    "/api/auth/bootstrap": bootstrapHandler as unknown as Handler,
-    "/api/import-posts": importPostsHandler as Handler,
-    "/api/cms-post": cmsPostHandler as Handler,
-    "/api/upload-media": uploadMediaHandler as Handler,
-    "/api/seo-suggest": seoSuggestHandler as Handler,
-    "/api/public/comments": publicCommentsHandler as Handler,
-    "/api/public/post-view": postViewHandler as Handler,
-    "/api/public/chat": chatHandler as Handler,
-  },
-  PATCH: {
-    "/api/cms-post": cmsPostHandler as Handler,
-    "/api/comments/moderation": commentsModerationHandler as Handler,
-    "/api/settings/users": settingsUsersHandler as Handler,
-  },
-  DELETE: {
-    "/api/comments/moderation": commentsModerationHandler as Handler,
-    "/api/settings/users": settingsUsersHandler as Handler,
-  },
-};
-
-const optionHandlers: Record<string, Handler> = {
-  "/api/public/captcha": captchaHandler as Handler,
-  "/api/public/comments": publicCommentsHandler as Handler,
-  "/api/public/post-view": postViewHandler as Handler,
-  "/api/public/chat": chatHandler as Handler,
-};
-
 async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, pathname: string, bodyBuf: Buffer) {
-  const method = req.method?.toUpperCase() || "GET";
-  const keyPath = pathname.replace(/\/$/, "") || "/";
-
-  if (method === "OPTIONS") {
-    const oh = optionHandlers[keyPath];
-    if (!oh) return false;
-    const vercelReq = adaptRequest(req, bodyBuf);
-    const vercelRes = adaptResponse(res);
-    await Promise.resolve(oh(vercelReq, vercelRes));
-    return true;
-  }
-
-  const table = handlers[method]?.[keyPath];
-
-  const handlerFn = table;
-  if (!handlerFn) return false;
-
   const vercelReq = adaptRequest(req, bodyBuf);
+  if (!vercelReq.url?.startsWith("/api")) {
+    vercelReq.url = pathname + (req.url?.includes("?") ? "?" + req.url.split("?")[1] : "");
+  }
   const vercelRes = adaptResponse(res);
-  await Promise.resolve(handlerFn(vercelReq, vercelRes));
-  return true;
+  return dispatchApi(vercelReq, vercelRes);
 }
 
 function sendStatic(req: http.IncomingMessage, res: http.ServerResponse): void {
